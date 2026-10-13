@@ -50,14 +50,18 @@ kuruluyor: iskelet dosyaları bu oturumun içeriğinden birebir yeniden yazıld�
 venv, kaynak zip (`jarvis-3.0.0-windows (1).zip`) yeniden temin edilince kurulacak.
 Ders: ilk push geciktirilmemeli — bundan sonra her commit anında push'lanır.
 
-## D-08 — Live model + ses kararı (2026-10-13, Faz 2)
-- S-01 KAPANDI: güncel doküman (ai.google.dev/gemini-api/docs/models, 2026-10-13) doğrulandı.
-  Legacy `gemini-2.5-flash-native-audio-latest` katalogda YOK; güncel varsayılan
-  `gemini-3.8-live` (`app/voice/live_config.py:LIVE_MODEL`). Değişirse tek nokta.
-- Ses **Charon**: 3 pakette de varsayılan; kullanıcı şartıyla SABİTLENDİ
-  (`VOICE_NAME`, `VOICE_OPTIONS=("Charon",)`). Test mühürlü (`test_voice_pinned_charon`).
-- Yankı notu: hoparlör+mikrofon aynı anda açıkken donanımsal AEC/kulaklık gerekir;
-  RUNBOOK'a "kulaklık önerilir" yazıldı (Faz 2 kabulünde elle test).
+## D-08 — Live model + ses kararı (2026-10-13, Faz 2; canlı sonda ile doğrulandı)
+- S-01 KAPANDI: önce doküman (ai.google.dev) bakıldı, SONRA gerçek anahtarla
+  5 model × 2 API sürümü tarandı. Sonuç: dokümanın "varsayılan" dediği
+  `gemini-3.8-live` bu hesapta 1007 yiyor (erişim yok); çalışan endpoint
+  `gemini-2.5-flash-native-audio-preview-12-2025` (v1beta, sesli yanıt alındı).
+  `LIVE_MODEL` budur; 3.8 erişimi açılırsa tek satır değişir.
+- Ses **Charon**: canlı sondada Charon config'iyle ses parçası alındı
+  (`CHARON-SES: OK`) — Jarvis'in birebir sesi doğrulandı. Mühürlü test var.
+- Üretim config'i (13 araç + resumption + compression + transcription) uçtan uca
+  doğrulandı: model "saat kaç" sorusuna `sys_info` aracını ÇAĞIRDI.
+- SDK notu: `SlidingWindow` çıplak verilemez;
+  `ContextWindowCompressionConfig(sliding_window=...)` gerekir (genai 2.30.1).
 
 ## D-07 — Ruff kapsamı: BLE/S110/S112 bilinçli istisna (2026-10-13, refactor)
 `ruff check` 79 bulgu üretti; 25'i otomatik düzeltildi (ölü import, sıralama, modern sözdizimi).

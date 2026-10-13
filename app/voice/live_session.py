@@ -84,7 +84,8 @@ class LiveSessionManager:
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
                         voice_name=cfg.VOICE_NAME))),  # Charon — SABİT
             session_resumption=types.SessionResumptionConfig(handle=self.load_handle()),
-            context_window_compression=types.SlidingWindow(),
+            context_window_compression=types.ContextWindowCompressionConfig(
+                sliding_window=types.SlidingWindow()),
         )
 
     # -- yaşam döngüsü --

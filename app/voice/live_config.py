@@ -9,7 +9,10 @@
 from __future__ import annotations
 
 # -- model + ses (SABİT) --
-LIVE_MODEL = "gemini-3.8-live"
+# NOT (2026-10-13, canlı sonda): dokümanın "varsayılan" dediği gemini-3.8-live bu
+# hesapta 1007 yiyor; çalışan endpoint gemini-2.5-flash-native-audio-preview-12-2025
+# (v1beta). 3.8 erişimi açılırsa TEK SATIR değişir.
+LIVE_MODEL = "gemini-2.5-flash-native-audio-preview-12-2025"
 VOICE_NAME = "Charon"  # Jarvis'in sesi — birebir aynı
 VOICE_OPTIONS = ("Charon",)  # Faz 9'a kadar tek seçenek
 

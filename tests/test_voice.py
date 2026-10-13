@@ -35,7 +35,8 @@ def test_voice_pinned_charon():
 
 
 def test_live_model_current():
-    assert cfg.LIVE_MODEL == "gemini-3.8-live"
+    # Canlı sonda doğrulandı (2026-10-13): bu hesapta çalışan endpoint.
+    assert cfg.LIVE_MODEL == "gemini-2.5-flash-native-audio-preview-12-2025"
 
 
 def test_audio_constants_match_live_spec():
