@@ -1,0 +1,12 @@
+# Satır sonu normalizasyonu (Windows CRLF uyarılarını susturur)
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.mp3 binary
+*.ttf binary
+*.png binary
