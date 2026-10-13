@@ -1,0 +1,46 @@
+# ── ULTRON .gitignore (spec §5.7 + Python standartları) ──
+# Sırlar — ASLA commit'e girmez
+.env
+.env.*
+secrets/
+config/api_keys.json
+**/api_keys.json
+token*.json
+credentials*.json
+*.pem
+*.key
+
+# Yerel veri (yalnızca çalışma-anı dosyaları; legacy referans kodları hariç)
+*.db
+*.db-journal
+/memory/
+app/memory/*.json
+app/memory/*.db
+memory.json
+phone_book.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.uv/
+build/
+dist/
+
+# Medya/üretimler
+*.mp3
+*.wav
+*.bak
+
+# Büyük ikili zıp'ler repoya girmez (kaynak zip ayrı saklanır):
+*.zip
+
+# OS / editör
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
