@@ -1,5 +1,10 @@
 # CHANGELOG.md — ULTRON
 
+## [0.3.0] — Faz 2 (devam ediyor)
+- Ses sabitleri: model `gemini-3.8-live`, ses **Charon** (mühürlü).
+- Tek `AudioIO` sahibi, event bus, Live oturum yöneticisi (resumption+barge-in),
+  wake-word durum makinesi (çift-alkış yedeği).
+
 ## [0.2.0] — Faz 1 (tamamlandı, 2026-10-13)
 - Tool Registry + `ToolResult` (B-15/B-19 kapandı). 13 araç registry'de.
 - Policy Engine (allowlist) + audit (hash zinciri) + kill switch + confirm çekirdeği (B-05).
