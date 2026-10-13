@@ -16,6 +16,8 @@ dependencies = [
     "mss==10.2.0",
     "pyautogui==0.9.54",  # B-10: legacy requirements'ta eksikti, eklendi
     "pyyaml==6.0.3",  # policy.yaml okuma (yoksa güvenli varsayılanlara düşülür)
+    "keyring==25.7.0",  # Windows Credential Manager (B-16)
+    "pywin32==312",  # keyring Windows arka ucu
 ]
 
 [project.optional-dependencies]
