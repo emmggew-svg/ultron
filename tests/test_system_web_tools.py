@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import asyncio
 
-import app.tools.system_tools as sysmod
 import app.tools.web_tools as webmod
+from app.tools.loader import load_all
 from app.tools.registry import REGISTRY
+
+load_all()
 
 
 def _call(name, **args):

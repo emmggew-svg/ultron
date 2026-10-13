@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import asyncio
 
-from app.tools.registry import REGISTRY, Risk, ToolResult, tool
+from app.tools.loader import load_all
+from app.tools.registry import REGISTRY, Risk, ToolResult
 
-import app.tools.comms_tools  # noqa: F401 (araçları kaydet)
-import app.tools.shell_tool  # noqa: F401
+load_all()
 
 
 def _call(name, **args):
