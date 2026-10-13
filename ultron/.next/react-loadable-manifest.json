@@ -1,0 +1,14 @@
+{
+  "app\\page.jsx -> @/components/UltronOrb": {
+    "id": "app\\page.jsx -> @/components/UltronOrb",
+    "files": [
+      "static/chunks/_app-pages-browser_components_UltronOrb_jsx.js"
+    ]
+  },
+  "components\\UltronScene.jsx -> ./UltronOrb": {
+    "id": "components\\UltronScene.jsx -> ./UltronOrb",
+    "files": [
+      "static/chunks/_app-pages-browser_components_UltronOrb_jsx.js"
+    ]
+  }
+}

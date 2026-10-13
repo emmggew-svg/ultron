@@ -20,6 +20,10 @@ dependencies = [
     "pywin32==312",  # keyring Windows arka ucu
     "apscheduler==3.10.4",  # yerel zamanlayıcı (Faz 3)
     "win10toast==0.9",  # Windows toast bildirimleri
+    "fastapi==0.115.0",
+    "uvicorn==0.32.0",
+    "websockets==13.0",
+    "pydantic==2.10.0",
 ]
 
 [project.optional-dependencies]

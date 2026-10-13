@@ -340,6 +340,8 @@ placeholder'lar ya silinecek ya da gerçek API'lere redirect edilecek.
 
 ## 7. SONRAKİ ADIMLAR (öncelik sırasıyla)
 
+## 7. SONRAKİ ADIMLAR (öncelik sırasıyla)
+
 ### HEMEN YAPILACAK (bu oturumda)
 1. ✅ **Faz 3 REFACTOR** — TAMAMLANDI (2026-10-13):
    - `task_tools.py` SİLİNDİ (4 placeholder tool) — gerçek API'ler Faz 3'te geldi
@@ -347,7 +349,14 @@ placeholder'lar ya silinecek ya da gerçek API'lere redirect edilecek.
    - `.gitignore`'a `app/data/` eklendi
    - DECISIONS.md'ye D-09, TOOLS.md 15 araçla güncellendi
    - ruff temiz, commit `2a6c973` push'landı
-2. **Faz 4 — Gmail** (spec §6.3): SIRADA
+2. ✅ **Faz 3.5 — Next.js + Electron + FastAPI Frontend** — TAMAMLANDI (2026-10-13):
+   - Next.js 14 + Three.js UI (ULTRON orb, Charon sesi korunuyor)
+   - Components: ChatPanel, Controls, StatusBar, UltronScene/Orb
+   - FastAPI bridge: `/api/chat`, `/api/tools/call`, `/ws` WebSocket, `/api/tools`
+   - Electron wrapper: tray, global shortcuts (Ctrl+Alt+Shift+K), preload, window controls
+   - Electron builder NSIS config
+   - 92 test yeşil, ruff temiz
+3. **Faz 4 — Gmail** (spec §6.3): SIRADA
    - `app/tools/gmail_tools.py` — arama/okuma/özet + taslak + ONAYLI gönderim
    - Sırlar keyring'e (`gmail_credentials`)
    - Direkt gönderme YOK; her gönderim confirm kapısından geçer
