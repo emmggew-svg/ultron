@@ -140,7 +140,10 @@ class LiveSessionManager:
         self._mic_sending = True  # B-08: konuşurken KAPANMAZ
         try:
             while not self._stop.is_set():
-                frame = await queue.get()
+                try:
+                    frame = await asyncio.wait_for(queue.get(), timeout=0.1)
+                except asyncio.TimeoutError:
+                    continue
                 await session.send_realtime_input(
                     audio={"data": frame, "mime_type": "audio/pcm;rate=16000"})
         finally:

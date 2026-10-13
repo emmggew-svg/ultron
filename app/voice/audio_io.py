@@ -135,3 +135,8 @@ class AudioIO:
                     out.close()
             except Exception:
                 pass
+
+    async def close(self) -> None:
+        """Temiz kapatma: hoparlör döngüsünü durdur, mikrofonu kapat."""
+        self.stop_input()
+        await self.out_queue.put(None)  # play_loop sentineli
