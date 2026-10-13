@@ -12,7 +12,9 @@
 - **Git:** depo hazır, remote `origin = https://github.com/emmggew-svg/ultron.git` (private repo AÇIK ama BOŞ — push henüz yok).
 - **Baz kod:** `legacy/jarvis-windows/` — **HENÜZ YOK**, kaynak zip bekleniyor (`jarvis-3.0.0-windows (1).zip`).
 - **venv:** **HENÜZ YOK** — zip ile birlikte kurulacak.
-- **Durum:** İskelet dosyaları yazıldı; B-01…B-20 doğrulaması önceki oturumda tamamlandı (kayıtlar aşağıda).
+- **Durum:** Faz 0 + Faz 1 TAMAMLANDI (78 test yeşil, 12 commit push'lu).
+  Sıradaki: Faz 2 (ses katmanı). S-01 (model adı) Faz 2'nin ilk işi.
+- **Kural:** Faz N bitmeden Faz N+1'e başlama. Güvenlik (spec §5) pazarlıksız. Her commit anında push.
 - **Kural:** Faz N bitmeden Faz N+1'e başlama. Güvenlik (spec §5) pazarlıksız. Her commit anında push (ders: §10.1).
 
 ## 1. ORTAM ENVANTERİ (doğrulanmış)

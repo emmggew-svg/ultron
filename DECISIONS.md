@@ -50,6 +50,12 @@ kuruluyor: iskelet dosyaları bu oturumun içeriğinden birebir yeniden yazıld�
 venv, kaynak zip (`jarvis-3.0.0-windows (1).zip`) yeniden temin edilince kurulacak.
 Ders: ilk push geciktirilmemeli — bundan sonra her commit anında push'lanır.
 
+## D-06 — WhatsApp pencere-başlığı doğrulaması Faz 6'ya ertelendi (2026-10-13, Faz 1)
+B-06'nın 3 ayağından 2'si Faz 1'de kapatıldı (alıcı doğrulama + her-seferinde-onay kapısı).
+3. ayak (otomasyon öncesi hedef pencere başlığı doğrulaması) UI Automation altyapısı
+gerektirir; Faz 6'da `pywinauto`/`uiautomation` ile eklenecek. O zamana kadar
+`send_now=true` yalnızca açık kullanıcı onayı SONRASI çalışır — tek güvence onaydır.
+
 ## Açık sorular
 - [ ] S-01: `LIVE_MODEL = "models/gemini-2.5-flash-native-audio-latest"` güncel mi? API anahtarı olmadan doğrulanamaz. Faz 2 başında `live_config.py` içinde tek noktadan doğrulanacak.
 - [ ] S-02: Google Cloud projesi (Gmail/Takvim OAuth) kullanıcı tarafından açılacak mı, mock ile mi ilerlenecek? (Faz 3'ü bloklar)
