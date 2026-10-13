@@ -30,6 +30,7 @@ venv/
 .uv/
 build/
 dist/
+node_modules/
 
 # Medya/üretimler
 *.mp3
