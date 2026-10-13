@@ -45,7 +45,8 @@ class SchedulerManager:
             return
         self._init_db()
         jobstores = {"default": SQLAlchemyJobStore(url=f"sqlite:///{JOBS_DB}")}
-        self._scheduler = BackgroundScheduler(jobstores=jobstores, timezone="local")
+        # Windows'ta "local" tanımsız olabilir; UTC kullan
+        self._scheduler = BackgroundScheduler(jobstores=jobstores, timezone="UTC")
         self._scheduler.start()
         self._thread = threading.Thread(target=self._check_missed, daemon=True, name="UltronScheduler")
         self._thread.start()
@@ -70,7 +71,7 @@ class SchedulerManager:
         job_id = f"remind_{int(time.time() * 1000)}"
         trigger = DateTrigger(run_date=when)
         self._scheduler.add_job(
-            self._fire_reminder,
+            SchedulerManager._fire_reminder_static,
             trigger,
             args=[text],
             id=job_id,
@@ -89,6 +90,17 @@ class SchedulerManager:
             return True
         except Exception:
             return False
+
+    @staticmethod
+    def _fire_reminder_static(text: str) -> None:
+        """Static fire function for APScheduler (no self reference)."""
+        # Toast notification (Windows)
+        try:
+            import win10toast
+            toaster = win10toast.ToastNotifier()
+            toaster.show_toast("ULTRON Hatırlatıcı", text, duration=10, threaded=True)
+        except Exception:
+            pass
 
     def _fire_reminder(self, text: str) -> None:
         if self.notify_cb:
