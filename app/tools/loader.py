@@ -15,7 +15,6 @@ def load_all(registry: ToolRegistry | None = None) -> ToolRegistry:
     import app.tools.scheduler
     import app.tools.shell_tool
     import app.tools.system_tools
-    import app.tools.task_tools
     import app.tools.web_tools  # noqa: F401
 
     return registry or get_registry()

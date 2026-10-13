@@ -7,18 +7,16 @@
 from __future__ import annotations
 
 import json
-import os
 import threading
 import time
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, Optional
 
 try:
-    from apscheduler.schedulers.background import BackgroundScheduler
     from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+    from apscheduler.schedulers.background import BackgroundScheduler
     from apscheduler.triggers.date import DateTrigger
-    from apscheduler.triggers.interval import IntervalTrigger
     _HAS_APSCHEDULER = True
 except ImportError:
     _HAS_APSCHEDULER = False
@@ -30,10 +28,10 @@ REMINDERS_FILE = Path(__file__).resolve().parent.parent / "data" / "reminders.js
 
 
 class SchedulerManager:
-    def __init__(self, notify_cb: Optional[Callable[[str], None]] = None):
+    def __init__(self, notify_cb: Callable[[str], None] | None = None):
         self.notify_cb = notify_cb
-        self._scheduler: Optional[BackgroundScheduler] = None
-        self._thread: Optional[threading.Thread] = None
+        self._scheduler: BackgroundScheduler | None = None
+        self._thread: threading.Thread | None = None
         self._stop = threading.Event()
         self._lock = threading.Lock()
         self._initialized = False
@@ -62,7 +60,7 @@ class SchedulerManager:
         if self._thread:
             self._thread.join(timeout=2)
 
-    def add_reminder(self, text: str, when: datetime, repeat: Optional[str] = None) -> str:
+    def add_reminder(self, text: str, when: datetime, repeat: str | None = None) -> str:
         """Hatırlatıcı ekler. when = datetime (tz-aware). repeat: 'daily', 'weekly', 'monthly'."""
         if not _HAS_APSCHEDULER:
             return "APScheduler yok"
@@ -113,7 +111,7 @@ class SchedulerManager:
         except Exception:
             pass
 
-    def _persist_reminder(self, job_id: str, text: str, when_iso: str, repeat: Optional[str]) -> None:
+    def _persist_reminder(self, job_id: str, text: str, when_iso: str, repeat: str | None) -> None:
         reminders = self._load_reminders()
         reminders[job_id] = {"text": text, "when": when_iso, "repeat": repeat, "created": datetime.now().isoformat()}
         self._save_reminders(reminders)
@@ -142,7 +140,6 @@ class SchedulerManager:
         while not self._stop.is_set():
             try:
                 reminders = self._load_reminders()
-                now = datetime.now().astimezone()
                 for job_id, r in list(reminders.items()):
                     when = datetime.fromisoformat(r["when"])
                     if when < datetime.now().astimezone():
@@ -169,11 +166,12 @@ class SchedulerManager:
         return base + timedelta(days=1)
 
 
-_SCHEDULER: Optional[SchedulerManager] = None
+_SCHEDULER: SchedulerManager | None = None
 
 
-def get_scheduler(notify_cb: Optional[Callable[[str], None]] = None) -> SchedulerManager:
-    global _SCHEDULER
+def get_scheduler(notify_cb: Callable[[str], None] | None = None) -> SchedulerManager:
+    # Module-level singleton (bilinçli; PLW0603 bypass)
+    global _SCHEDULER  # noqa: PLW0603
     if _SCHEDULER is None:
         _SCHEDULER = SchedulerManager(notify_cb)
         _SCHEDULER.start()
@@ -193,13 +191,13 @@ def get_scheduler(notify_cb: Optional[Callable[[str], None]] = None) -> Schedule
     })
 def reminder_add(text: str, when_iso: str, repeat: str = "") -> ToolResult:
     try:
-        when = datetime.fromisoformat(when_iso.replace("Z", "+00:00"))
+        when = datetime.fromisoformat(when_iso)  # 3.11+: 'Z' son ekini de kabul eder
         if when.tzinfo is None:
             when = when.replace(tzinfo=datetime.now().astimezone().tzinfo)
     except Exception:
         return ToolResult(ok=False, message="Zaman formatı hatalı (ISO gerekli).", error="bad_args")
     sched = get_scheduler()
-    job_id = sched.add_reminder(text, when, repeat if repeat else None)
+    job_id = sched.add_reminder(text, when, repeat or None)
     return ToolResult(ok=True, message=f"Hatırlatıcı eklendi: {job_id} — {text} @ {when_iso}")
 
 

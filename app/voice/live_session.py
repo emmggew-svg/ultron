@@ -142,7 +142,7 @@ class LiveSessionManager:
             while not self._stop.is_set():
                 try:
                     frame = await asyncio.wait_for(queue.get(), timeout=0.1)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     continue
                 await session.send_realtime_input(
                     audio={"data": frame, "mime_type": "audio/pcm;rate=16000"})

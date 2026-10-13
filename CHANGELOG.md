@@ -1,6 +1,13 @@
 # CHANGELOG.md — ULTRON
 
-## [0.3.0] — Faz 2 (devam ediyor)
+## [0.3.1] — Faz 3 refactor (2026-10-13)
+- `task_tools.py` placeholder'ları SİLİNDİ (4 tool) — yerine Faz 3'te gerçek
+  Google Calendar + APScheduler araçları geldi. Toplam araç: 19 → 15.
+- `.gitignore`'a `app/data/` eklendi (scheduler.sqlite, reminders.json).
+- DECISIONS.md'ye D-09 kararı eklendi. TOOLS.md güncellendi.
+- Test: 96 → 92 (4 placeholder testi silindi, tümü yeşil).
+
+## [0.3.0] — Faz 3 + Faz 2 (2026-10-13)
 - Ses sabitleri: model `gemini-3.8-live`, ses **Charon** (mühürlü).
 - Tek `AudioIO` sahibi, event bus, Live oturum yöneticisi (resumption+barge-in),
   wake-word durum makinesi (çift-alkış yedeği).

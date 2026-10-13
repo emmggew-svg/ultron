@@ -72,6 +72,17 @@ sessiz geçiş YOKTUR; bu ayrım testlerle korunur (`tests/safety/`).
 `RUF001-003` (Türkçe 'ı' harfini "belirsiz" sayar) ve `E501` (88 karakter Türkçe
 metin için dardır) bu projede yanlış pozitiftir; kapalıdır.
 
+## D-09 — Faz 3 placeholder → gerçek API geçişi (2026-10-13, Faz 3 refactor)
+Faz 1'de `task_tools.py` içinde 4 placeholder tool vardı (`add_calendar_event`,
+`get_calendar_events`, `add_reminder`, `get_reminders`) — şablon URL + yerel JSON,
+gerçek iş yapmıyordu. Faz 3'te gerçek karşılıklar geldi (`google_calendar.py` +
+`scheduler.py`), bu yüzden placeholder'lar **SİLİNDİ** ve `task_tools.py` + `tests/test_task_tools.py`
+kaldırıldı. Toplam araç: 19 → **15**.
+- `.gitignore`'a `app/data/` eklendi (scheduler.sqlite + reminders.json çalışma-anı dosyalarıdır).
+- Google Calendar için kullanıcı OAuth `credentials.json` dosyasını
+  `app/data/google/` altına koymalı (S-02). Koyana kadar `calendar_*` araçları
+  `FileNotFoundError` döner — beklenen davranış, mock DEĞİL.
+
 ## D-06 — WhatsApp pencere-başlığı doğrulaması Faz 6'ya ertelendi (2026-10-13, Faz 1)
 B-06'nın 3 ayağından 2'si Faz 1'de kapatıldı (alıcı doğrulama + her-seferinde-onay kapısı).
 3. ayak (otomasyon öncesi hedef pencere başlığı doğrulaması) UI Automation altyapısı

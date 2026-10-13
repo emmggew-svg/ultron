@@ -2,16 +2,16 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-from app.tools.scheduler import SchedulerManager, REMINDERS_FILE
+from app.tools.scheduler import SchedulerManager
 
 
 def test_reminder_roundtrip():
     sched = SchedulerManager()
     sched.start()
     try:
-        when = datetime.now(timezone.utc) + timedelta(seconds=2)
+        when = datetime.now(UTC) + timedelta(seconds=2)
         job_id = sched.add_reminder("Test hatırlatma", when)
         assert job_id.startswith("remind_")
         time.sleep(3)
@@ -22,7 +22,7 @@ def test_reminder_roundtrip():
 
 def test_reminder_persisted(tmp_path):
     import json
-    from pathlib import Path
+
     import app.tools.scheduler as sched_mod
 
     # Use a temp reminders file
@@ -34,7 +34,7 @@ def test_reminder_persisted(tmp_path):
         sched = SchedulerManager()
         sched.start()
         try:
-            when = datetime.now(timezone.utc) + timedelta(days=1)
+            when = datetime.now(UTC) + timedelta(days=1)
             job_id = sched.add_reminder("Yarın toplantı", when)
             # persisted dosyaya yazılmış mı?
             assert test_file.exists()

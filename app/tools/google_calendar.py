@@ -3,16 +3,13 @@
 from __future__ import annotations
 
 import datetime
-import json
-import os
 from pathlib import Path
-from typing import Any
 
 try:
+    from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
     from googleapiclient.discovery import build
-    from google.auth.transport.requests import Request
     _HAS_GOOGLE_API = True
 except ImportError:
     _HAS_GOOGLE_API = False
@@ -29,7 +26,7 @@ def ensure_token_dir() -> None:
     TOKEN_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def get_credentials() -> "Credentials | None":
+def get_credentials() -> Credentials | None:
     """OAuth akışı (ilk çalışmada) ya da saklı token ile Credentials döner."""
     if not _HAS_GOOGLE_API:
         return None
@@ -103,7 +100,7 @@ def calendar_list(time_min: str = "", time_max: str = "", max_results: int = 10)
     if service is None:
         return ToolResult(ok=False, message="Calendar servisi kullanılamıyor (OAuth gerekli).", error="no_service")
     try:
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
         tmin = parse_datetime_iso(time_min) if time_min else now
         tmax = parse_datetime_iso(time_max) if time_max else (now + datetime.timedelta(days=7))
         if tmin is None or tmax is None:
