@@ -4,9 +4,8 @@
 > anlayabilsin ve kaldığı yerden hatasız devam edebilsin. Her şey burada: ortam,
 > mimari, tüm commit'ler, kararlar, bilinen hatalar, sonraki adımlar.
 >
-> **Son güncelleme:** 2026-10-13 — Faz 2 tamamlandı, Faz 3 Google Calendar + Scheduler
-> kodu yazıldı ve push'landı ama **Faz 3 REFACTOR'U YAPILMADI** — Faz 4'e geçmeden
-> önce refactor ŞART (kullanıcı talimatı).
+> **Son güncelleme:** 2026-10-13 — Faz 2 tamamlandı, Faz 3 tamamlandı + REFACTOR
+> TAMAMLANDI (placeholder'lar silindi, 15 araç). **Sırada: Faz 4 — Gmail.**
 >
 > **Tek doğruluk kaynağı spec:** `D:\ULTRON_MASTER_SPEC.md` (v1.0, 46.354 byte,
 > SHA256 `C871BA62...A362BB`). Proje kökü dışında durur.
@@ -342,14 +341,13 @@ placeholder'lar ya silinecek ya da gerçek API'lere redirect edilecek.
 ## 7. SONRAKİ ADIMLAR (öncelik sırasıyla)
 
 ### HEMEN YAPILACAK (bu oturumda)
-1. **Faz 3 REFACTOR** — kullanıcının talimatı:
-   - `task_tools.py`'daki 4 placeholder tool'u SİL (gerçekleri Faz 3'te geldi)
-   - `tests/test_task_tools.py`'ı gerçek API'lerle senkronize et
-   - `app/data/` klasörünü `.gitignore`'a ekle (sqlite + json artıkları)
-   - `DECISIONS.md`'ye D-09 kararı ekle (placeholder → gerçek API geçişi)
-   - `docs/TOOLS.md` güncelle (19 araç tablosu)
-   - ruff + pytest → temiz
-2. **Faz 4 — Gmail** (spec §6.3):
+1. ✅ **Faz 3 REFACTOR** — TAMAMLANDI (2026-10-13):
+   - `task_tools.py` SİLİNDİ (4 placeholder tool) — gerçek API'ler Faz 3'te geldi
+   - `tests/test_task_tools.py` silindi (92 test kaldı, tümü yeşil)
+   - `.gitignore`'a `app/data/` eklendi
+   - DECISIONS.md'ye D-09, TOOLS.md 15 araçla güncellendi
+   - ruff temiz, commit `2a6c973` push'landı
+2. **Faz 4 — Gmail** (spec §6.3): SIRADA
    - `app/tools/gmail_tools.py` — arama/okuma/özet + taslak + ONAYLI gönderim
    - Sırlar keyring'e (`gmail_credentials`)
    - Direkt gönderme YOK; her gönderim confirm kapısından geçer
@@ -457,8 +455,8 @@ tests/safety/test_privacy.py ...         [100%]
 
 - **Repo:** https://github.com/emmggew-svg/ultron (PRIVATE)
 - **Branch:** `main`
-- **Son commit:** `ec61a44 fix: scheduler APScheduler serialization + timezone + static fire method`
-- **Toplam commit:** 24 (Faz 0'dan Faz 3'e)
+- **Son commit:** `2a6c973 faz-3-r: refactor — placeholder silme (task_tools), gitignore app/data, ruff temizligi`
+- **Toplam commit:** 26 (Faz 0'dan Faz 3 refactor'a)
 - **Çalışma ağacı:** temiz
 
 ---
