@@ -14,16 +14,15 @@ Kurallar:
 from __future__ import annotations
 
 import asyncio
-import dataclasses
 import functools
 import inspect
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class Risk(str, Enum):
+class Risk(StrEnum):
     SAFE = "SAFE"           # salt okuma, yan etkisiz
     LOW = "LOW"             # uygulama açma, URL açma, arama
     MEDIUM = "MEDIUM"       # dosya yazma (izinli kök), taslak, takvim/görev ekleme
@@ -145,7 +144,7 @@ class ToolRegistry:
             else:
                 raw = await asyncio.wait_for(
                     asyncio.to_thread(tooldef.func, **args), timeout=tooldef.timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             result = ToolResult(ok=False, message=f"{name} zaman aşımına uğradı.",
                                 error=f"timeout:{tooldef.timeout}s")
             self._record(name, args, tooldef.risk, decision, False, started)
@@ -227,6 +226,12 @@ def get_registry() -> ToolRegistry:
 
 
 __all__ = [
-    "Risk", "ParamSpec", "ToolResult", "ToolDef", "ToolRegistry",
-    "REGISTRY", "tool", "get_registry",
+    "REGISTRY",
+    "ParamSpec",
+    "Risk",
+    "ToolDef",
+    "ToolRegistry",
+    "ToolResult",
+    "get_registry",
+    "tool",
 ]

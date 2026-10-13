@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import time
 import unicodedata
 import urllib.parse
@@ -21,7 +20,6 @@ from pathlib import Path
 from app.tools.registry import Risk, ToolResult, tool
 
 try:
-    import pyperclip
     _HAS_PYPERCLIP = True
 except Exception:
     _HAS_PYPERCLIP = False

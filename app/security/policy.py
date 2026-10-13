@@ -99,8 +99,7 @@ class Policy:
         # Faz 1: ilk token; powershell/cmd ise deny (yorumlayıcı kaçışı).
         token = cmd.split(None, 1)[0] if cmd.split() else ""
         token = os.path.basename(token).lower()
-        if token.endswith(".exe"):
-            token = token[:-4]
+        token = token.removesuffix(".exe")
         return token
 
     def check_shell(self, command: str) -> tuple[str, str]:

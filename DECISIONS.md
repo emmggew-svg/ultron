@@ -50,6 +50,15 @@ kuruluyor: iskelet dosyaları bu oturumun içeriğinden birebir yeniden yazıld�
 venv, kaynak zip (`jarvis-3.0.0-windows (1).zip`) yeniden temin edilince kurulacak.
 Ders: ilk push geciktirilmemeli — bundan sonra her commit anında push'lanır.
 
+## D-07 — Ruff kapsamı: BLE/S110/S112 bilinçli istisna (2026-10-13, refactor)
+`ruff check` 79 bulgu üretti; 25'i otomatik düzeltildi (ölü import, sıralama, modern sözdizimi).
+`BLE001` (geniş except), `S110/S112` (sessiz fallback) `pyproject.toml`'da kapalıdır —
+gerekçe: araç sınırı kodunda "asla çökme" spec §1.3.5'in gereğidir; her araç hatayı
+`ToolResult(ok=False)`'a çevirir. Güvenlik-kritik yollarda (policy deny, confirm)
+sessiz geçiş YOKTUR; bu ayrım testlerle korunur (`tests/safety/`).
+`RUF001-003` (Türkçe 'ı' harfini "belirsiz" sayar) ve `E501` (88 karakter Türkçe
+metin için dardır) bu projede yanlış pozitiftir; kapalıdır.
+
 ## D-06 — WhatsApp pencere-başlığı doğrulaması Faz 6'ya ertelendi (2026-10-13, Faz 1)
 B-06'nın 3 ayağından 2'si Faz 1'de kapatıldı (alıcı doğrulama + her-seferinde-onay kapısı).
 3. ayak (otomasyon öncesi hedef pencere başlığı doğrulaması) UI Automation altyapısı

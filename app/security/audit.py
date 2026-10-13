@@ -45,7 +45,7 @@ def redact_args(args: dict) -> dict:
 
 
 def _entry_hash(prev_hash: str, payload: str) -> str:
-    return hashlib.sha256(f"{prev_hash}|{payload}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{prev_hash}|{payload}".encode()).hexdigest()
 
 
 class AuditLog:

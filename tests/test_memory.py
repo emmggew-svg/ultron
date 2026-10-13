@@ -5,9 +5,8 @@ import asyncio
 import json
 
 import app.memory.store as store
-from app.tools.registry import REGISTRY
-
 import app.tools.memory_tools  # noqa: F401  (araçları kaydet)
+from app.tools.registry import REGISTRY
 
 
 def _call(name, **args):
@@ -19,8 +18,6 @@ def test_save_and_sensitive_rejected(tmp_path, monkeypatch):
     # store modülü _DEFAULT_PATH'i import anında okumuyor; path() her çağrıda bakar —
     # ama memory_tools varsayılan path kullanır; geçici dizine yönlendirmek için
     # _path fonksiyonunu sar:
-    import app.tools.memory_tools as mt
-    orig_path = store._path
     monkeypatch.setattr(store, "_path", lambda custom=None: tmp_path / "memory.json")
 
     r = _call("save_memory", category="tercihler", key="cay", value="şekersiz")

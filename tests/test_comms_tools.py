@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 
 import app.tools.comms_tools as cm
 from app.tools.registry import REGISTRY
@@ -21,7 +20,6 @@ def test_send_requires_confirmation_gate():
 
 def test_send_empty_message_body(monkeypatch):
     """Gövde doğrulaması (kapıyı baypas etmek için doğrudan çağrı)."""
-    r = cm.send_whatsapp_message.wrapped if False else None
     tooldef = REGISTRY.get("send_whatsapp_message")
     res = asyncio.run(_run_body(tooldef, message="", phone_number="+905551112233"))
     assert res.ok is False

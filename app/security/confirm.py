@@ -13,8 +13,9 @@ from __future__ import annotations
 import asyncio
 import inspect
 import time
-from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 from app.security.killswitch import KILLSWITCH
 
@@ -45,7 +46,9 @@ async def request_approval(request: ApprovalRequest,
                            approver: Approver | None = None,
                            timeout: float = DEFAULT_TIMEOUT_SECONDS) -> ApprovalDecision:
     started = time.monotonic()
-    elapsed = lambda: int((time.monotonic() - started) * 1000)
+
+    def elapsed() -> int:
+        return int((time.monotonic() - started) * 1000)
 
     if KILLSWITCH.tripped:
         return ApprovalDecision(approved=False, decided_by="killswitch", latency_ms=elapsed())
@@ -59,7 +62,7 @@ async def request_approval(request: ApprovalRequest,
         else:
             approved = bool(result)
         return ApprovalDecision(approved=approved, decided_by="user", latency_ms=elapsed())
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return ApprovalDecision(approved=False, decided_by="timeout", latency_ms=elapsed())
     except Exception:
         return ApprovalDecision(approved=False, decided_by="error", latency_ms=elapsed())

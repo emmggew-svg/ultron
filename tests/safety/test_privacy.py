@@ -32,7 +32,7 @@ def test_no_real_keys_in_app_code():
 
 def test_example_configs_have_no_secrets():
     import re as _re
-    secret_key = _re.compile(r"(key|token|secret|password|passwd|auth|credential)", _re.I)
+    secret_key = _re.compile(r"(key|token|secret|password|passwd|auth|credential)", _re.IGNORECASE)
     for rel in ("legacy/jarvis-windows/config/api_keys.example.json",
                 "legacy/v2-windows/config/api_keys.example.json"):
         data = json.loads((ROOT / rel).read_text(encoding="utf-8"))

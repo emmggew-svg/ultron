@@ -12,7 +12,7 @@ import re
 import subprocess
 
 from app.security.policy import DECISION_ALLOW, DECISION_DENY, load_policy
-from app.tools.registry import REGISTRY, Risk, ToolResult, tool
+from app.tools.registry import Risk, ToolResult, tool
 
 _POLICY = load_policy()
 
@@ -47,7 +47,7 @@ def _run_shell(command: str, timeout: int) -> ToolResult:
         timeout = limit
     try:
         result = subprocess.run(
-            command, shell=False, capture_output=True, text=True,
+            command, shell=False, check=False, capture_output=True, text=True,
             timeout=timeout, encoding="utf-8", errors="replace",
         )
     except subprocess.TimeoutExpired:
