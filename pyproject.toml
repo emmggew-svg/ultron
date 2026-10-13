@@ -18,6 +18,8 @@ dependencies = [
     "pyyaml==6.0.3",  # policy.yaml okuma (yoksa güvenli varsayılanlara düşülür)
     "keyring==25.7.0",  # Windows Credential Manager (B-16)
     "pywin32==312",  # keyring Windows arka ucu
+    "apscheduler==3.10.4",  # yerel zamanlayıcı (Faz 3)
+    "win10toast==0.9",  # Windows toast bildirimleri
 ]
 
 [project.optional-dependencies]

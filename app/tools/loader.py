@@ -10,7 +10,9 @@ from app.tools.registry import ToolRegistry, get_registry
 
 def load_all(registry: ToolRegistry | None = None) -> ToolRegistry:
     import app.tools.comms_tools
+    import app.tools.google_calendar
     import app.tools.memory_tools
+    import app.tools.scheduler
     import app.tools.shell_tool
     import app.tools.system_tools
     import app.tools.task_tools
