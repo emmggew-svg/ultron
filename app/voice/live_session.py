@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -107,7 +107,7 @@ class LiveSessionManager:
             self.bus.emit("state_changed", {"state": "RECONNECTING", "delay": delay})
             try:
                 await asyncio.wait_for(self._stop.wait(), timeout=delay)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass
             attempt += 1
 

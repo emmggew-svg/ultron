@@ -7,7 +7,6 @@ Hoparlör kuyruğu kesilebilir: barge-in anında flush() çağrılır (B-08).
 from __future__ import annotations
 
 import asyncio
-import queue
 import threading
 from collections.abc import Callable
 
@@ -18,7 +17,12 @@ except Exception:
     pyaudio = None  # type: ignore[assignment]
     _HAS_PYAUDIO = False
 
-from app.voice.live_config import CHANNELS, CHUNK_SIZE, RECV_SAMPLE_RATE, SEND_SAMPLE_RATE
+from app.voice.live_config import (
+    CHANNELS,
+    CHUNK_SIZE,
+    RECV_SAMPLE_RATE,
+    SEND_SAMPLE_RATE,
+)
 
 FrameCallback = Callable[[bytes], None]
 
