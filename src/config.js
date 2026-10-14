@@ -25,14 +25,14 @@ function blankProviders() {
   return o;
 }
 
-const DEFAULTS = { port: 3030, activeProvider: "openai", providers: blankProviders() };
+const DEFAULTS = { port: 3030, activeProvider: "openai", providers: blankProviders(), agent: { requireApproval: true } };
 
 export function loadConfig() {
   let raw = {};
   try {
     raw = JSON.parse(fs.readFileSync(FILE, "utf8"));
   } catch {}
-  const cfg = { port: raw.port ?? DEFAULTS.port, activeProvider: raw.activeProvider ?? "openai", providers: blankProviders() };
+  const cfg = { port: raw.port ?? DEFAULTS.port, activeProvider: raw.activeProvider ?? "openai", providers: blankProviders(), agent: { requireApproval: raw.agent?.requireApproval !== false } };
   if (!PROVIDER_IDS.includes(cfg.activeProvider)) cfg.activeProvider = "openai";
   if (raw.providers && typeof raw.providers === "object") {
     for (const [id, p] of Object.entries(raw.providers)) {
@@ -55,6 +55,9 @@ export function saveConfig(patch) {
   if (patch.port !== undefined) cfg.port = Number(patch.port);
   if (patch.activeProvider !== undefined && PROVIDER_IDS.includes(patch.activeProvider)) {
     cfg.activeProvider = patch.activeProvider;
+  }
+  if (patch.agent && typeof patch.agent === "object" && patch.agent.requireApproval !== undefined) {
+    cfg.agent.requireApproval = patch.agent.requireApproval !== false;
   }
   if (patch.providers && typeof patch.providers === "object") {
     for (const [id, p] of Object.entries(patch.providers)) {

@@ -26,6 +26,7 @@ Kullanim:
                                             API key kaydet (varsayilan: aktif saglayici)
   openultron config set-model <MODEL> [--provider X]
   openultron config set-url <BASE_URL> [--provider X]
+  openultron config set-approval <on|off>    Kritik araçlarda onay sor (varsayilan: on)
 `);
 }
 
@@ -195,6 +196,13 @@ if (cmd === "web" && sub === "build") {
   const id = provider();
   saveConfig({ providers: { [id]: { baseURL: extra } } });
   console.log(`Endpoint (${id}): ${extra}`);
+} else if (cmd === "config" && sub === "set-approval") {
+  if (extra !== "on" && extra !== "off") {
+    console.error("Kullanim: openultron config set-approval <on|off>");
+    process.exit(1);
+  }
+  saveConfig({ agent: { requireApproval: extra === "on" } });
+  console.log(`Arac onayi: ${extra}`);
 } else {
   help();
 }

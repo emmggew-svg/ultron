@@ -17,6 +17,13 @@ export default function Page() {
   const [backend, setBackend] = useState({ activeProvider: "…", model: "…", hasKey: false, hasAnyKey: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsWelcome, setSettingsWelcome] = useState(false);
+  const [currentRun, setCurrentRun] = useState(null);
+
+  useEffect(() => {
+    const onRun = (e) => setCurrentRun(e.detail);
+    window.addEventListener("ultron-run", onRun);
+    return () => window.removeEventListener("ultron-run", onRun);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setUptime((t) => t + 1), 1000);
@@ -102,8 +109,17 @@ export default function Page() {
       speechSynthesis.cancel();
     } catch {}
     setIsMicActive(false);
+    if (currentRun) {
+      fetch("/api/agent/abort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runId: currentRun }),
+      }).catch(() => {});
+      window.dispatchEvent(new CustomEvent("ultron-toast", { detail: "Agent durduruluyor…" }));
+    } else {
+      window.dispatchEvent(new CustomEvent("ultron-toast", { detail: "Durduruldu." }));
+    }
     setState("IDLE");
-    window.dispatchEvent(new CustomEvent("ultron-toast", { detail: "Durduruldu." }));
   };
 
   return (

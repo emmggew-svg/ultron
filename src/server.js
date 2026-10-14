@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfig, saveConfig, hasAnyKey, PROVIDER_IDS } from "./config.js";
 import { PROVIDERS, chatWithProvider } from "./providers.js";
+import { runAgent, resolveApproval, abortRun } from "./agent.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_OUT = path.join(__dirname, "..", "web", "out");
@@ -132,6 +133,59 @@ export function createServer(cfg) {
         }
       } catch (e) {
         return send(res, 500, JSON.stringify({ ok: false, error: String(e?.message ?? e) }));
+      }
+    }
+    // --- Agent: araç çalıştıran döngü (SSE) ---
+    if (url.pathname === "/api/agent" && req.method === "POST") {
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      if (!messages.length) return send(res, 400, JSON.stringify({ ok: false, error: "messages boş" }));
+      const id = PROVIDER_IDS.includes(body.provider) ? body.provider : cfg.activeProvider;
+      const creds = cfg.providers[id];
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+      const emit = (obj) => {
+        try {
+          res.write(`data: ${JSON.stringify(obj)}\n\n`);
+        } catch {}
+      };
+      let closed = false;
+      req.on("close", () => {
+        closed = true;
+      });
+      await runAgent({
+        providerId: id,
+        creds,
+        messages,
+        requireApproval: cfg.agent?.requireApproval !== false,
+        emit: (o) => {
+          if (!closed) emit(o);
+        },
+      });
+      try {
+        res.end();
+      } catch {}
+      return;
+    }
+    if (url.pathname === "/api/approve" && req.method === "POST") {
+      try {
+        const body = JSON.parse((await readBody(req)) || "{}");
+        const ok = resolveApproval(body.runId, body.seq, body.approve);
+        return send(res, 200, JSON.stringify({ ok }));
+      } catch (e) {
+        return send(res, 400, JSON.stringify({ ok: false, error: String(e?.message ?? e) }));
+      }
+    }
+    if (url.pathname === "/api/agent/abort" && req.method === "POST") {
+      try {
+        const body = JSON.parse((await readBody(req)) || "{}");
+        const ok = abortRun(body.runId);
+        return send(res, 200, JSON.stringify({ ok }));
+      } catch (e) {
+        return send(res, 400, JSON.stringify({ ok: false, error: String(e?.message ?? e) }));
       }
     }
 
