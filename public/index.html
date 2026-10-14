@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ULTRON</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header>
+  <div class="brand"><span class="dot"></span> ULTRON</div>
+  <div class="meta"><span id="status">bağlanıyor…</span>
+    <button id="settingsBtn" title="Ayarlar">⚙</button>
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <div class="orb" id="orb"><div class="core"></div></div>
+    <h2 id="stateLine">Hazırım.</h2>
+    <p class="hint">Mikrofon yoksa da yazman yeterli. Cevabı sesli duymak için “Sesli anlat”a bas.</p>
+    <div class="row">
+      <button id="speakBtn">🔊 Sesli anlat</button>
+      <button id="stopBtn" class="ghost">⏹ Durdur</button>
+      <label class="tts"><input type="checkbox" id="autoTts" /> otomatik sesli cevap</label>
+    </div>
+  </section>
+
+  <aside class="chat">
+    <div id="messages" class="messages"></div>
+    <form id="form" class="composer">
+      <button type="button" id="micBtn" title="Mikrofonla söyle">🎤</button>
+      <input id="input" autocomplete="off" placeholder="ULTRON'a yaz…" />
+      <button type="submit">➤</button>
+    </form>
+    <div id="micHint" class="mic-hint"></div>
+  </aside>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="card">
+    <h3>Ayarlar</h3>
+    <label>API Key <input id="fKey" type="password" placeholder="sk-…" /></label>
+    <label>Model <input id="fModel" placeholder="gpt-4o-mini" /></label>
+    <label>Endpoint (OpenAI-compatible) <input id="fUrl" placeholder="https://api.openai.com/v1" /></label>
+    <div class="row">
+      <button id="saveBtn">Kaydet</button>
+      <button id="closeBtn" class="ghost">Kapat</button>
+    </div>
+    <p class="note">Key girilmezse demo modda çalışır. Key ev dizininde <code>~/.ultron/config.json</code> içinde saklanır, tarayıcıda tutulmaz.</p>
+  </div>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>

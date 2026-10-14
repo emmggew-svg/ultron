@@ -1,0 +1,17 @@
+{
+  "name": "openultron",
+  "version": "0.1.0",
+  "description": "ULTRON — local personal assistant. Runs on localhost:3030, browser UI with chat + voice.",
+  "type": "module",
+  "bin": {
+    "openultron": "./bin/openultron.js"
+  },
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "node ./src/server.js --port 3030"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
