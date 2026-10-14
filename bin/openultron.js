@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig, saveConfig, configPath } from "../src/config.js";
+import { loadConfig, saveConfig, configPath, PROVIDER_IDS } from "../src/config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.join(__dirname, "..", "src", "server.js");
@@ -14,15 +14,17 @@ const PIDFILE = path.join(os.homedir(), ".ultron", "server.pid");
 function help() {
   console.log(`openultron — ULTRON local assistant
 Kullanim:
-  openultron service start [--port 3030]   Servisi baslat (foreground)
+  openultron service start [--port 3030]   Servisi baslat (foreground + tarayici acar)
   openultron service start -d [--port N]   Arka planda baslat (detached)
   openultron service stop                   Servisi durdur
   openultron service status                 Durum + port bilgisi
   openultron open [--port N]                Taryicida ac
-  openultron config show                    Aktif ayari goster (key maskeli)
-  openultron config set-key <KEY>           API key kaydet
-  openultron config set-model <MODEL>       Model sec (orn: gpt-4o-mini)
-  openultron config set-url <BASE_URL>      OpenAI-compatible endpoint
+  openultron config show                    Aktif ayari goster (key'ler maskeli)
+  openultron config use <saglayici>         Aktif saglayici: openai | anthropic | gemini | nvidia
+  openultron config set-key <KEY> [--provider X]
+                                            API key kaydet (varsayilan: aktif saglayici)
+  openultron config set-model <MODEL> [--provider X]
+  openultron config set-url <BASE_URL> [--provider X]
 `);
 }
 
@@ -35,6 +37,15 @@ function has(flag) {
 }
 function port() {
   return Number(arg("--port") ?? loadConfig().port ?? 3030);
+}
+function provider() {
+  const p = arg("--provider");
+  if (!p) return loadConfig().activeProvider;
+  if (!PROVIDER_IDS.includes(p)) {
+    console.error(`Bilinmeyen saglayici: ${p} (secenekler: ${PROVIDER_IDS.join(" | ")})`);
+    process.exit(1);
+  }
+  return p;
 }
 function pidAlive(pid) {
   try {
@@ -127,29 +138,44 @@ if (cmd === "service" && sub === "start") {
   console.log(`Acildi → http://localhost:${p}`);
 } else if (cmd === "config" && sub === "show") {
   const c = loadConfig();
-  console.log(JSON.stringify({ ...c, apiKey: c.apiKey ? "***" + String(c.apiKey).slice(-4) : "" }, null, 2));
+  const out = { port: c.port, activeProvider: c.activeProvider, providers: {} };
+  for (const id of PROVIDER_IDS) {
+    const p = c.providers[id];
+    out.providers[id] = { hasKey: Boolean(p.apiKey), masked: p.apiKey ? "***" + String(p.apiKey).slice(-4) : "", model: p.model, baseURL: p.baseURL };
+  }
+  console.log(JSON.stringify(out, null, 2));
   console.log(`dosya: ${configPath()}`);
+} else if (cmd === "config" && sub === "use") {
+  if (!extra || !PROVIDER_IDS.includes(extra)) {
+    console.error(`Kullanim: openultron config use <${PROVIDER_IDS.join("|")}>`);
+    process.exit(1);
+  }
+  saveConfig({ activeProvider: extra });
+  console.log(`Aktif saglayici: ${extra}`);
 } else if (cmd === "config" && sub === "set-key") {
   if (!extra) {
-    console.error("Kullanim: openultron config set-key <KEY>");
+    console.error("Kullanim: openultron config set-key <KEY> [--provider X]");
     process.exit(1);
   }
-  saveConfig({ apiKey: extra });
-  console.log("API key kaydedildi.");
+  const id = provider();
+  saveConfig({ providers: { [id]: { apiKey: extra } } });
+  console.log(`API key kaydedildi (${id}).`);
 } else if (cmd === "config" && sub === "set-model") {
   if (!extra) {
-    console.error("Kullanim: openultron config set-model <MODEL>");
+    console.error("Kullanim: openultron config set-model <MODEL> [--provider X]");
     process.exit(1);
   }
-  saveConfig({ model: extra });
-  console.log(`Model: ${extra}`);
+  const id = provider();
+  saveConfig({ providers: { [id]: { model: extra } } });
+  console.log(`Model (${id}): ${extra}`);
 } else if (cmd === "config" && sub === "set-url") {
   if (!extra) {
-    console.error("Kullanim: openultron config set-url <BASE_URL>");
+    console.error("Kullanim: openultron config set-url <BASE_URL> [--provider X]");
     process.exit(1);
   }
-  saveConfig({ baseURL: extra });
-  console.log(`Endpoint: ${extra}`);
+  const id = provider();
+  saveConfig({ providers: { [id]: { baseURL: extra } } });
+  console.log(`Endpoint (${id}): ${extra}`);
 } else {
   help();
 }

@@ -4,11 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ULTRON</title>
+<link rel="icon" href="./ultron.png" />
 <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
 <header>
-  <div class="brand"><span class="dot"></span> ULTRON</div>
+  <div class="brand"><img src="./ultron.png" alt="ULTRON" class="logo" /> ULTRON</div>
   <div class="meta"><span id="status">bağlanıyor…</span>
     <button id="settingsBtn" title="Ayarlar">⚙</button>
   </div>
@@ -16,7 +17,7 @@
 
 <main>
   <section class="stage">
-    <div class="orb" id="orb"><div class="core"></div></div>
+    <img src="./ultron.png" alt="ULTRON" class="hero" id="hero" />
     <h2 id="stateLine">Hazırım.</h2>
     <p class="hint">Mikrofon yoksa da yazman yeterli. Cevabı sesli duymak için “Sesli anlat”a bas.</p>
     <div class="row">
@@ -38,16 +39,23 @@
 </main>
 
 <div id="modal" class="modal hidden">
-  <div class="card">
-    <h3>Ayarlar</h3>
-    <label>API Key <input id="fKey" type="password" placeholder="sk-…" /></label>
-    <label>Model <input id="fModel" placeholder="gpt-4o-mini" /></label>
-    <label>Endpoint (OpenAI-compatible) <input id="fUrl" placeholder="https://api.openai.com/v1" /></label>
+  <div class="card wide">
+    <h3 id="modalTitle">Ayarlar</h3>
+    <p id="welcome" class="welcome hidden">👋 Hoş geldin! ULTRON'u kullanmak için önce bir <b>API anahtarı</b> gir. Aşağıdan sağlayıcını seç, key'ini yapıştır, kaydet.</p>
+    <div id="tabs" class="tabs"></div>
+    <div id="provInfo" class="prov-info"></div>
+    <label>API Key <input id="fKey" type="password" placeholder="" /></label>
+    <label>Model <input id="fModel" placeholder="" /></label>
+    <label>Endpoint <input id="fUrl" placeholder="" /></label>
     <div class="row">
+      <button id="useBtn" class="ghost">★ Aktif olarak kullan</button>
       <button id="saveBtn">Kaydet</button>
       <button id="closeBtn" class="ghost">Kapat</button>
     </div>
-    <p class="note">Key girilmezse demo modda çalışır. Key ev dizininde <code>~/.ultron/config.json</code> içinde saklanır, tarayıcıda tutulmaz.</p>
+    <div class="row start">
+      <button id="demoBtn" class="linklike">Key olmadan demo modda devam et →</button>
+    </div>
+    <p class="note">Key'ler ev dizininde <code>~/.ultron/config.json</code> içinde saklanır, tarayıcıda tutulmaz.</p>
   </div>
 </div>
 

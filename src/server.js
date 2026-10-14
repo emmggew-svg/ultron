@@ -2,8 +2,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig, saveConfig } from "./config.js";
-import { chatComplete } from "./llm.js";
+import { loadConfig, saveConfig, hasAnyKey, PROVIDER_IDS } from "./config.js";
+import { PROVIDERS, chatWithProvider } from "./providers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, "..", "public");
@@ -35,29 +35,72 @@ function readBody(req) {
   });
 }
 
+function safeConfig(cfg) {
+  const providers = {};
+  for (const id of PROVIDER_IDS) {
+    const p = cfg.providers[id];
+    providers[id] = {
+      label: PROVIDERS[id].label,
+      keyUrl: PROVIDERS[id].keyUrl,
+      keyHint: PROVIDERS[id].keyHint,
+      hasKey: Boolean(p.apiKey),
+      masked: p.apiKey ? "***" + String(p.apiKey).slice(-4) : "",
+      model: p.model,
+      baseURL: p.baseURL,
+    };
+  }
+  return { port: cfg.port, activeProvider: cfg.activeProvider, hasAnyKey: hasAnyKey(cfg), providers };
+}
+
 export function createServer(cfg) {
   return http.createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
 
+    // CLI'dan yapılan değişiklikler server çalışırken de geçerli olsun:
+    // her API isteğinde ayarı diskten tazele.
+    if (url.pathname.startsWith("/api/")) {
+      try {
+        Object.assign(cfg, loadConfig());
+      } catch {}
+    }
+
     // --- API ---
     if (url.pathname === "/api/status" && req.method === "GET") {
-      return send(res, 200, JSON.stringify({ ok: true, service: "ultron", hasKey: Boolean(cfg.apiKey), model: cfg.model }));
+      const p = cfg.providers[cfg.activeProvider];
+      return send(res, 200, JSON.stringify({
+        ok: true,
+        service: "ultron",
+        activeProvider: cfg.activeProvider,
+        hasKey: Boolean(p.apiKey),
+        hasAnyKey: hasAnyKey(cfg),
+        model: p.model,
+      }));
     }
     if (url.pathname === "/api/config" && req.method === "GET") {
-      const safe = { ...cfg, apiKey: cfg.apiKey ? "***" + String(cfg.apiKey).slice(-4) : "" };
-      return send(res, 200, JSON.stringify(safe));
+      return send(res, 200, JSON.stringify(safeConfig(cfg)));
     }
     if (url.pathname === "/api/config" && req.method === "POST") {
       try {
         const body = JSON.parse((await readBody(req)) || "{}");
-        const next = saveConfig({
-          ...(body.apiKey !== undefined ? { apiKey: body.apiKey } : {}),
-          ...(body.model !== undefined ? { model: body.model } : {}),
-          ...(body.baseURL !== undefined ? { baseURL: body.baseURL } : {}),
-          ...(body.port !== undefined ? { port: Number(body.port) } : {}),
-        });
+        const patch = {};
+        if (body.activeProvider !== undefined) patch.activeProvider = body.activeProvider;
+        if (body.port !== undefined) patch.port = Number(body.port);
+        if (body.providers && typeof body.providers === "object") {
+          patch.providers = {};
+          for (const [id, p] of Object.entries(body.providers)) {
+            if (!PROVIDER_IDS.includes(id) || !p || typeof p !== "object") continue;
+            patch.providers[id] = {};
+            // Boş key gönderilirse mevcut key korunur (maskeli değer asla yazılmaz)
+            if (typeof p.apiKey === "string" && p.apiKey && !p.apiKey.startsWith("***")) {
+              patch.providers[id].apiKey = p.apiKey;
+            }
+            if (typeof p.model === "string" && p.model) patch.providers[id].model = p.model;
+            if (typeof p.baseURL === "string" && p.baseURL) patch.providers[id].baseURL = p.baseURL;
+          }
+        }
+        const next = saveConfig(patch);
         Object.assign(cfg, next);
-        return send(res, 200, JSON.stringify({ ok: true }));
+        return send(res, 200, JSON.stringify({ ok: true, config: safeConfig(cfg) }));
       } catch (e) {
         return send(res, 400, JSON.stringify({ ok: false, error: String(e?.message ?? e) }));
       }
@@ -67,8 +110,17 @@ export function createServer(cfg) {
         const body = JSON.parse((await readBody(req)) || "{}");
         const messages = Array.isArray(body.messages) ? body.messages : [];
         if (!messages.length) return send(res, 400, JSON.stringify({ ok: false, error: "messages boş" }));
-        const reply = await chatComplete({ baseURL: cfg.baseURL, model: cfg.model, apiKey: cfg.apiKey, messages });
-        return send(res, 200, JSON.stringify({ ok: true, reply }));
+        const id = PROVIDER_IDS.includes(body.provider) ? body.provider : cfg.activeProvider;
+        const creds = cfg.providers[id];
+        try {
+          const reply = await chatWithProvider(id, creds, messages);
+          return send(res, 200, JSON.stringify({ ok: true, reply, provider: id }));
+        } catch (e) {
+          if (e?.code === "NO_KEY") {
+            return send(res, 200, JSON.stringify({ ok: true, demo: true, provider: id, reply: null }));
+          }
+          throw e;
+        }
       } catch (e) {
         return send(res, 500, JSON.stringify({ ok: false, error: String(e?.message ?? e) }));
       }

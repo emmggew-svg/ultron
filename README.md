@@ -17,17 +17,25 @@ openultron service status
 openultron service stop
 ```
 
-## API key bağlama
+## Sağlayıcılar (hepsi desteklenir)
 
-Arayüzde sağ üstteki ⚙'a bas, veya:
+| Sağlayıcı | Endpoint | Key nereden |
+|---|---|---|
+| OpenAI | `https://api.openai.com/v1` | https://platform.openai.com/api-keys |
+| Anthropic (Claude) | `https://api.anthropic.com` | https://console.anthropic.com/ |
+| Google Gemini | `https://generativelanguage.googleapis.com` | https://aistudio.google.com/apikey |
+| NVIDIA Build | `https://integrate.api.nvidia.com/v1` | https://build.nvidia.com/ |
+
+Tarayıcı ilk açıldığında hiç key girilmediyse **API anahtarı ekranı** otomatik çıkar. Sekmeden sağlayıcıyı seç, key + model + endpoint gir, kaydet. Veya terminalden:
 
 ```cmd
-openultron config set-key sk-...
-openultron config set-model gpt-4o-mini
-openultron config set-url https://api.openai.com/v1
+openultron config use gemini
+openultron config set-key AIza... --provider gemini
+openultron config set-model gemini-2.5-flash --provider gemini
+openultron config show
 ```
 
-Key yoksa **demo modda** çalışır (yazılabilir, konuşulabilir, ama LLM cevabı vermez).
+Key yoksa **demo modda** çalışır.
 
 Ayar dosyası: `~/.ultron/config.json`
 

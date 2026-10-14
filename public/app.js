@@ -1,12 +1,14 @@
 const $ = (id) => document.getElementById(id);
 const messagesEl = $("messages"), form = $("form"), input = $("input");
-const orb = $("orb"), stateLine = $("stateLine"), statusEl = $("status");
+const stateLine = $("stateLine"), statusEl = $("status");
 const micBtn = $("micBtn"), micHint = $("micHint");
 const speakBtn = $("speakBtn"), stopBtn = $("stopBtn"), autoTts = $("autoTts");
-const modal = $("modal");
+const modal = $("modal"), tabsEl = $("tabs");
 
 let history = [{ role: "system", content: "Sen ULTRON'sun: kısa, net, Türkçe konuşan yerel kişisel asistan. Gereksiz uzunluk yapma." }];
 let lastReply = "";
+let cfg = null;       // /api/config sonucu
+let activeTab = null; // ayarlarda görünen sağlayıcı
 
 function addMsg(role, text) {
   const div = document.createElement("div");
@@ -25,12 +27,66 @@ function speak(text) {
   } catch {}
 }
 
+function maskOf(p) {
+  return p.hasKey ? `（${p.masked}）` : "";
+}
+
+function renderTabs() {
+  tabsEl.innerHTML = "";
+  for (const [id, p] of Object.entries(cfg.providers)) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (id === activeTab ? " on" : "") + (id === cfg.activeProvider ? " active" : "");
+    b.textContent = (id === cfg.activeProvider ? "★ " : "") + p.label + (p.hasKey ? " ✓" : "");
+    b.onclick = () => { activeTab = id; renderTabs(); fillFields(); };
+    tabsEl.appendChild(b);
+  }
+}
+
+function fillFields() {
+  const p = cfg.providers[activeTab];
+  $("provInfo").innerHTML = "";
+  const a = document.createElement("a");
+  a.href = p.keyUrl;
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.textContent = "🔑 " + p.label + " key al →";
+  $("provInfo").appendChild(a);
+  const hint = document.createElement("span");
+  hint.textContent = " " + p.keyHint + " " + maskOf(p);
+  $("provInfo").appendChild(hint);
+  $("fKey").placeholder = p.hasKey ? "Kayıtlı " + p.masked + " (değiştirmek için yaz)" : p.keyHint;
+  $("fKey").value = "";
+  $("fModel").value = p.model || "";
+  $("fUrl").value = p.baseURL || "";
+  $("useBtn").textContent = activeTab === cfg.activeProvider ? "★ Aktif (şu an bu kullanılıyor)" : "★ Aktif olarak kullan";
+}
+
+async function openSettings(welcome) {
+  try {
+    cfg = await fetch("/api/config").then((x) => x.json());
+  } catch {
+    addMsg("err", "Ayarlar yüklenemedi — server çalışıyor mu?");
+    return;
+  }
+  if (!activeTab || !cfg.providers[activeTab]) activeTab = cfg.activeProvider;
+  $("welcome").classList.toggle("hidden", !welcome);
+  $("modalTitle").textContent = welcome ? "API Anahtarı Gerekli" : "Ayarlar";
+  $("demoBtn").style.display = welcome ? "" : "none";
+  renderTabs();
+  fillFields();
+  modal.classList.remove("hidden");
+}
+
 async function refreshStatus() {
   try {
     const r = await fetch("/api/status").then((x) => x.json());
-    statusEl.textContent = r.hasKey ? `çevrimiçi • ${r.model}` : "demo mod (key yok)";
+    const label = r.activeProvider ? r.activeProvider : "?";
+    statusEl.textContent = r.hasKey ? `çevrimiçi • ${label} • ${r.model}` : (r.hasAnyKey ? `demo • key bu sağlayıcıda yok (${label})` : "demo mod (key yok)");
+    return r;
   } catch {
     statusEl.textContent = "bağlantı yok";
+    return null;
   }
 }
 
@@ -41,7 +97,6 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
   addMsg("you", text);
   history.push({ role: "user", content: text });
-  orb.classList.add("busy");
   stateLine.textContent = "Düşünüyorum…";
   try {
     const r = await fetch("/api/chat", {
@@ -50,6 +105,11 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ messages: history.slice(-20) }),
     }).then((x) => x.json());
     if (!r.ok) throw new Error(r.error || "hata");
+    if (r.demo) {
+      addMsg("bot", "Bu sağlayıcıda API key yok — demo moddayım. ⚙'dan key ekle, gerçek cevaplara geçelim.");
+      openSettings(true);
+      return;
+    }
     lastReply = r.reply;
     history.push({ role: "assistant", content: r.reply });
     addMsg("bot", r.reply);
@@ -58,15 +118,13 @@ form.addEventListener("submit", async (e) => {
   } catch (err) {
     addMsg("err", "Hata: " + err.message);
     stateLine.textContent = "Bir sorun oldu.";
-  } finally {
-    orb.classList.remove("busy");
   }
 });
 
 speakBtn.onclick = () => lastReply && speak(lastReply);
 stopBtn.onclick = () => { try { speechSynthesis.cancel(); } catch {} };
 
-// --- Mic (optional, graceful) ---
+// --- Mikrofon (opsiyonel) ---
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (!SR) {
   micHint.textContent = "Bu tarayıcıda mikrofon diktesi yok — yazarak kullanabilirsin.";
@@ -75,40 +133,40 @@ if (!SR) {
   const rec = new SR();
   rec.lang = "tr-TR";
   rec.interimResults = false;
-  micBtn.onclick = () => {
-    try { rec.start(); } catch {}
-  };
+  micBtn.onclick = () => { try { rec.start(); } catch {} };
   rec.onstart = () => { micBtn.classList.add("listening"); micHint.textContent = "Dinliyorum… konuş."; };
   rec.onend = () => { micBtn.classList.remove("listening"); micHint.textContent = ""; };
-  rec.onresult = (e) => {
-    const t = e.results[0][0].transcript;
-    input.value = t;
-    input.focus();
-  };
+  rec.onresult = (e) => { input.value = e.results[0][0].transcript; input.focus(); };
   rec.onerror = (e) => { micHint.textContent = "Mikrofon hatası (" + e.error + ") — yazarak devam edebilirsin."; };
 }
 
-// --- Settings ---
-$("settingsBtn").onclick = async () => {
-  modal.classList.remove("hidden");
-  try {
-    const c = await fetch("/api/config").then((x) => x.json());
-    $("fModel").value = c.model || "";
-    $("fUrl").value = c.baseURL || "";
-  } catch {}
-};
+// --- Ayarlar ---
+$("settingsBtn").onclick = () => openSettings(false);
 $("closeBtn").onclick = () => modal.classList.add("hidden");
-$("saveBtn").onclick = async () => {
-  const body = {};
-  if ($("fKey").value) body.apiKey = $("fKey").value;
-  if ($("fModel").value) body.model = $("fModel").value;
-  if ($("fUrl").value) body.baseURL = $("fUrl").value;
-  await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  $("fKey").value = "";
-  modal.classList.add("hidden");
+$("demoBtn").onclick = () => modal.classList.add("hidden");
+$("useBtn").onclick = async () => {
+  await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ activeProvider: activeTab }) });
+  cfg.activeProvider = activeTab;
+  renderTabs();
+  fillFields();
   refreshStatus();
-  addMsg("bot", "Ayarlar kaydedildi.");
+};
+$("saveBtn").onclick = async () => {
+  const body = { providers: { [activeTab]: {} } };
+  if ($("fKey").value) body.providers[activeTab].apiKey = $("fKey").value;
+  if ($("fModel").value) body.providers[activeTab].model = $("fModel").value;
+  if ($("fUrl").value) body.providers[activeTab].baseURL = $("fUrl").value;
+  const r = await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((x) => x.json());
+  if (r.ok) cfg = r.config;
+  $("fKey").value = "";
+  renderTabs();
+  fillFields();
+  refreshStatus();
+  addMsg("bot", cfg.providers[activeTab].label + " ayarları kaydedildi." + (cfg.providers[activeTab].hasKey ? "" : " (Key girilmedi — demo mod.)"));
 };
 
-addMsg("bot", "Selam, ben ULTRON. Sağdan yaz, istersen mikrofonla söyle, “Sesli anlat”la dinle. API key'i ⚙'dan ekleyebilirsin.");
-refreshStatus();
+(async function init() {
+  addMsg("bot", "Selam, ben ULTRON. Sağdan yaz, istersen mikrofonla söyle, “Sesli anlat”la dinle.");
+  const st = await refreshStatus();
+  if (st && !st.hasAnyKey) openSettings(true); // daha önce hiç key girilmediyse key ekranı
+})();
