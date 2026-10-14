@@ -13,7 +13,7 @@ export const PROVIDER_IDS = ["openai", "anthropic", "gemini", "nvidia"];
 export const PROVIDER_DEFAULTS = {
   openai: { baseURL: "https://api.openai.com/v1", model: "gpt-4o-mini" },
   anthropic: { baseURL: "https://api.anthropic.com", model: "claude-haiku-4-5-20251001" },
-  gemini: { baseURL: "https://generativelanguage.googleapis.com", model: "gemini-2.5-flash" },
+  gemini: { baseURL: "https://generativelanguage.googleapis.com", model: "gemini-3.8-flash" },
   nvidia: { baseURL: "https://integrate.api.nvidia.com/v1", model: "meta/llama-3.1-8b-instruct" },
 };
 

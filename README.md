@@ -31,7 +31,7 @@ Tarayıcı ilk açıldığında hiç key girilmediyse **API anahtarı ekranı** 
 ```cmd
 openultron config use gemini
 openultron config set-key AIza... --provider gemini
-openultron config set-model gemini-2.5-flash --provider gemini
+openultron config set-model gemini-3.8-flash --provider gemini
 openultron config show
 ```
 
