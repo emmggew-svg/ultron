@@ -64,6 +64,54 @@ function shortArgs(tool, args) {
   }
 }
 
+// Mini markdown (baloncuksuz agent metni, OpenCode hissi): bold, kod, liste, paragraf
+function renderInline(text, keyPrefix) {
+  const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((p, i) => {
+    if (p.startsWith("**") && p.endsWith("**") && p.length > 4) {
+      return <strong key={`${keyPrefix}-${i}`}>{p.slice(2, -2)}</strong>;
+    }
+    if (p.startsWith("`") && p.endsWith("`") && p.length > 2) {
+      return <code key={`${keyPrefix}-${i}`}>{p.slice(1, -1)}</code>;
+    }
+    return <span key={`${keyPrefix}-${i}`}>{p}</span>;
+  });
+}
+
+function AgentText({ text }) {
+  const blocks = String(text ?? "").split(/```(\w*)\n?([\s\S]*?)```/g);
+  const out = [];
+  for (let i = 0; i < blocks.length; i += 3) {
+    const prose = blocks[i];
+    const lang = blocks[i + 1];
+    const code = blocks[i + 2];
+    if (prose) {
+      const lines = prose.split("\n");
+      let list = [];
+      const flush = () => {
+        if (list.length) {
+          out.push(<ul key={`ul-${out.length}`}>{list.map((li, j) => <li key={j}>{renderInline(li, `li-${out.length}-${j}`)}</li>)}</ul>);
+          list = [];
+        }
+      };
+      lines.forEach((ln) => {
+        const m = ln.match(/^\s*[-*]\s+(.*)$/);
+        if (m) {
+          list.push(m[1]);
+        } else {
+          flush();
+          if (ln.trim()) out.push(<p key={`p-${out.length}`}>{renderInline(ln, `p-${out.length}`)}</p>);
+        }
+      });
+      flush();
+    }
+    if (code !== undefined) {
+      out.push(<pre key={`pre-${out.length}`}><code>{code.replace(/\n$/, "")}</code></pre>);
+    }
+  }
+  return <div className="agent-md">{out}</div>;
+}
+
 export default function ChatPanel({ onStateChange }) {
   const [messages, setMessages] = useState([
     { role: "assistant", content: "ULTRON hazır. Ne komut verirsin?", steps: [] },
@@ -265,8 +313,14 @@ export default function ChatPanel({ onStateChange }) {
 
       <div className="messages-container">
         {messages.map((msg, idx) => (
-          <div key={idx} className={`message ${msg.role}`}>
-            <div className="message-bubble">
+          msg.role === "user" ? (
+            <div key={idx} className="message user">
+              <div className="message-bubble">
+                <span>{msg.content}</span>
+              </div>
+            </div>
+          ) : (
+            <div key={idx} className="agent-block">
               {(msg.steps?.length > 0) && (
                 <div className="timeline">
                   {msg.steps.map((s, i) => (
@@ -274,12 +328,12 @@ export default function ChatPanel({ onStateChange }) {
                   ))}
                 </div>
               )}
-              {msg.content ? <span>{msg.content}</span> : null}
+              {msg.content ? <AgentText text={msg.content} /> : null}
               {msg.working && (!msg.steps || msg.steps.length === 0) && (
                 <span className="typing">düşünüyor<span className="dots"><span>.</span><span>.</span><span>.</span></span></span>
               )}
             </div>
-          </div>
+          )
         ))}
         <div ref={messagesEndRef} />
       </div>
