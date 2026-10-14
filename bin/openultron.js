@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // openultron CLI — zero dependency.
-import { spawn } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -19,6 +19,7 @@ Kullanim:
   openultron service stop                   Servisi durdur
   openultron service status                 Durum + port bilgisi
   openultron open [--port N]                Taryicida ac
+  openultron web build                      Next.js arayüzünü derle (web/out)
   openultron config show                    Aktif ayari goster (key'ler maskeli)
   openultron config use <saglayici>         Aktif saglayici: openai | anthropic | gemini | nvidia
   openultron config set-key <KEY> [--provider X]
@@ -81,9 +82,27 @@ async function waitUp(portN, tries = 25) {
 const [, , ...rest] = process.argv;
 const [cmd, sub, extra] = rest;
 
-if (cmd === "service" && sub === "start") {
+const WEB_DIR = path.join(__dirname, "..", "web");
+function webOutExists() {
+  try {
+    return fs.statSync(path.join(WEB_DIR, "out", "index.html")).isFile();
+  } catch {
+    return false;
+  }
+}
+function buildWeb() {
+  console.log("Web arayüzü derleniyor (ilk kurulum biraz sürebilir)…");
+  execSync("npm install --no-audit --no-fund", { cwd: WEB_DIR, stdio: "inherit" });
+  execSync("npm run build", { cwd: WEB_DIR, stdio: "inherit" });
+  console.log("Web derlendi → web/out");
+}
+
+if (cmd === "web" && sub === "build") {
+  buildWeb();
+} else if (cmd === "service" && sub === "start") {
   const p = port();
   saveConfig({ port: p });
+  if (!webOutExists()) buildWeb();
   if (has("-d") || has("--detached")) {
     const old = readPid();
     if (old && pidAlive(old)) {

@@ -39,6 +39,19 @@ Key yoksa **demo modda** çalışır.
 
 Ayar dosyası: `~/.ultron/config.json`
 
+## Web arayüzü (senin Next.js'in)
+
+`web/` klasörü senin hazırladığın Next.js (Three.js orb + sağda chat paneli).
+`openultron service start` ilk çalışta otomatik derler (`web/out`), sonra
+:3030'dan statik sunar. Manuel derleme:
+
+```cmd
+openultron web build
+```
+
+Not: `web/`, eski Python backend'e (`localhost:8000`) değil, bu repodaki
+Node backend'e (`/api/chat`, `/api/config`, `/api/status`) bağlıdır.
+
 ## Geliştirme
 
 ```cmd

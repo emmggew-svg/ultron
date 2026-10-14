@@ -6,7 +6,16 @@ import { loadConfig, saveConfig, hasAnyKey, PROVIDER_IDS } from "./config.js";
 import { PROVIDERS, chatWithProvider } from "./providers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PUBLIC = path.join(__dirname, "..", "public");
+const WEB_OUT = path.join(__dirname, "..", "web", "out");
+const PUBLIC_FALLBACK = path.join(__dirname, "..", "public");
+
+// Next.js statik export varsa onu sun, yoksa basit public/ arayüzü
+function staticRoot() {
+  try {
+    if (fs.statSync(path.join(WEB_OUT, "index.html")).isFile()) return WEB_OUT;
+  } catch {}
+  return PUBLIC_FALLBACK;
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -127,6 +136,7 @@ export function createServer(cfg) {
     }
 
     // --- Static ---
+    const PUBLIC = staticRoot();
     let filePath = path.join(PUBLIC, url.pathname === "/" ? "index.html" : url.pathname.slice(1));
     if (!filePath.startsWith(PUBLIC)) return send(res, 403, "forbidden", "text/plain");
     try {
