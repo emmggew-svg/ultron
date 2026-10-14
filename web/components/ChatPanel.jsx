@@ -321,6 +321,9 @@ export default function ChatPanel({ onStateChange }) {
             </div>
           ) : (
             <div key={idx} className="agent-block">
+              {msg.working && (
+                <div className="working-line">Çalışma<span className="dots"><span>.</span><span>.</span><span>.</span></span></div>
+              )}
               {(msg.steps?.length > 0) && (
                 <div className="timeline">
                   {msg.steps.map((s, i) => (
@@ -329,7 +332,7 @@ export default function ChatPanel({ onStateChange }) {
                 </div>
               )}
               {msg.content ? <AgentText text={msg.content} /> : null}
-              {msg.working && (!msg.steps || msg.steps.length === 0) && (
+              {msg.working && (!msg.steps || msg.steps.length === 0) && !msg.content && (
                 <span className="typing">düşünüyor<span className="dots"><span>.</span><span>.</span><span>.</span></span></span>
               )}
             </div>
