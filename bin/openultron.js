@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // openultron CLI — zero dependency.
 import { spawn, execSync } from "node:child_process";
+import readline from "node:readline";
+import { runCliAgent } from "../src/cli-agent.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,8 +16,11 @@ const PIDFILE = path.join(os.homedir(), ".ultron", "server.pid");
 function help() {
   console.log(`openultron — ULTRON local assistant
 Kullanim:
-  openultron start [--port 3030] [-d]    Servisi baslat (foreground + tarayici acar)
+  openultron start [--port 3030] [-d]    Servis secimiyle baslat (web veya terminal agenti)
+  openultron start --web [-d]             Direkt web arayüzü (OpenUltron Default)
+  openultron start --cli                  Direkt terminal agenti (Claude Code tarzi)
   openultron service start [...]         Ayni komutun uzun hali
+  openultron cli                          Terminal agentini direkt ac
   openultron service stop                   Servisi durdur
   openultron service status                 Durum + port bilgisi
   openultron open [--port N]                Taryicida ac
@@ -103,9 +108,72 @@ function buildWeb() {
   console.log("Web derlendi → web/out");
 }
 
-if (cmd === "web" && sub === "build") {
-  buildWeb();
-} else if (cmd === "service" && sub === "start") {
+const SERVICE_OPTIONS = [
+  { id: "web", label: "OpenUltron Default", desc: "localhost web arayüzü (sesli + chat)" },
+  { id: "cli", label: "openultron CLI", desc: "terminal agenti, Claude Code tarzi (sessiz)" },
+];
+
+async function pickService() {
+  if (has("--cli") || process.env.OPENULTRON_SERVICE === "cli") return "cli";
+  if (has("--web") || process.env.OPENULTRON_SERVICE === "web") return "web";
+  if (has("-d") || has("--detached")) return "web";
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    console.log("Which service do you want to start?\nTTY yok — varsayılan: OpenUltron Default");
+    return "web";
+  }
+  console.log("Which service do you want to start?");
+  let idx = 0;
+  let drawn = 0;
+  const draw = () => {
+    let up = "";
+    for (let i = 0; i < drawn; i++) up += "\x1b[1A\x1b[2K";
+    process.stdout.write(up);
+    drawn = SERVICE_OPTIONS.length;
+    for (let i = 0; i < SERVICE_OPTIONS.length; i++) {
+      const o = SERVICE_OPTIONS[i];
+      const mark = i === idx ? "❯" : " ";
+      process.stdout.write(`${mark} \x1b[1m${o.label}\x1b[0m  ${o.desc}\n`);
+    }
+  };
+  draw();
+  return await new Promise((resolve) => {
+    readline.emitKeypressEvents(process.stdin);
+    const wasRaw = process.stdin.isRaw;
+    try {
+      process.stdin.setRawMode(true);
+    } catch {}
+    process.stdin.resume();
+    process.stdout.write("\x1b[?25l");
+    const cleanup = () => {
+      process.stdin.removeListener("keypress", onKey);
+      try {
+        process.stdin.setRawMode(!!wasRaw);
+      } catch {}
+      process.stdout.write("\x1b[?25h");
+    };
+    const onKey = (str, key) => {
+      if (!key) return;
+      if (key.name === "up") {
+        idx = (idx + SERVICE_OPTIONS.length - 1) % SERVICE_OPTIONS.length;
+        draw();
+      } else if (key.name === "down") {
+        idx = (idx + 1) % SERVICE_OPTIONS.length;
+        draw();
+      } else if (key.name === "return" || key.name === "enter") {
+        cleanup();
+        console.log(`→ ${SERVICE_OPTIONS[idx].label}`);
+        resolve(SERVICE_OPTIONS[idx].id);
+      } else if ((key.ctrl && key.name === "c") || key.name === "escape") {
+        cleanup();
+        console.log("");
+        process.exit(0);
+      }
+    };
+    process.stdin.on("keypress", onKey);
+  });
+}
+
+async function startWeb() {
   const p = port();
   saveConfig({ port: p });
   if (!webOutExists()) buildWeb();
@@ -133,6 +201,19 @@ if (cmd === "web" && sub === "build") {
     process.on("SIGINT", onExit);
     process.on("SIGTERM", onExit);
     child.on("exit", (code) => process.exit(code ?? 0));
+  }
+}
+
+if (cmd === "web" && sub === "build") {
+  buildWeb();
+} else if (cmd === "cli") {
+  await runCliAgent();
+} else if (cmd === "service" && sub === "start") {
+  const pick = await pickService();
+  if (pick === "cli") {
+    await runCliAgent();
+  } else {
+    await startWeb();
   }
 } else if (cmd === "service" && sub === "stop") {
   const pid = readPid();

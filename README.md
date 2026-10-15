@@ -6,16 +6,26 @@ Yerel kişisel asistan. Tarayıcıda `http://localhost:3030` çalışır.
 
 ```cmd
 npm install -g .
-openultron service start
+openultron start
 ```
 
-Tarayıcı otomatik açılır. Arka planda çalıştırmak için:
+`start` (veya `service start`) sorar:
+
+```text
+Which service do you want to start?
+❯ OpenUltron Default  localhost web arayüzü (sesli + chat)
+  openultron CLI      terminal agenti, Claude Code tarzi (sessiz)
+```
+
+Ok tuşlarıyla seç, Enter'a bas. Direkt açmak için:
 
 ```cmd
-openultron service start -d
-openultron service status
-openultron service stop
+openultron start --web [-d]
+openultron start --cli
+openultron cli
 ```
+
+Terminal agentinde ses yok; araç onayı `y/n` ile sorulur, `/provider`, `/model`, `/approval`, `/exit` komutları var.
 
 ## Sağlayıcılar (hepsi desteklenir)
 
