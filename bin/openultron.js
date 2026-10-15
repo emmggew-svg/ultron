@@ -14,8 +14,8 @@ const PIDFILE = path.join(os.homedir(), ".ultron", "server.pid");
 function help() {
   console.log(`openultron — ULTRON local assistant
 Kullanim:
-  openultron service start [--port 3030]   Servisi baslat (foreground + tarayici acar)
-  openultron service start -d [--port N]   Arka planda baslat (detached)
+  openultron start [--port 3030] [-d]    Servisi baslat (foreground + tarayici acar)
+  openultron service start [...]         Ayni komutun uzun hali
   openultron service stop                   Servisi durdur
   openultron service status                 Durum + port bilgisi
   openultron open [--port N]                Taryicida ac
@@ -81,7 +81,12 @@ async function waitUp(portN, tries = 25) {
 }
 
 const [, , ...rest] = process.argv;
-const [cmd, sub, extra] = rest;
+let [cmd, sub, extra] = rest;
+// Kısayol: `openultron start` = `openultron service start`
+if (cmd === "start" && (sub === undefined || sub.startsWith("-") || sub === "--port")) {
+  cmd = "service";
+  sub = "start";
+}
 
 const WEB_DIR = path.join(__dirname, "..", "web");
 function webOutExists() {
