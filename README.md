@@ -27,6 +27,14 @@ openultron cli
 
 Terminal agentinde ses yok; araç onayı `y/n` ile sorulur, `/provider`, `/model`, `/approval`, `/exit` komutları var.
 
+Arka planda çalıştırmak, durum ve durdurma:
+
+```cmd
+openultron start --web -d
+openultron service status
+openultron service stop
+```
+
 ## Sağlayıcılar (hepsi desteklenir)
 
 | Sağlayıcı | Endpoint | Key nereden |
